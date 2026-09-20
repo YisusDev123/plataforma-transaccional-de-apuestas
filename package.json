@@ -1,0 +1,80 @@
+{
+  "name": "transactional-lottery-platform",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "lint": "eslint .",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --runInBand",
+    "check": "npm run lint && npm run test:coverage",
+    "security:audit": "npm audit --omit=dev",
+    "db:migrate:frontend-contracts": "node src/scripts/migrate-frontend-contracts.js",
+    "db:migrate:payout-rules": "node src/scripts/migrate-payout-rules.js",
+    "db:migrate:bet-receipts": "node src/scripts/migrate-bet-receipts.js",
+    "db:migrate:draw-defaults": "node src/scripts/migrate-draw-defaults.js",
+    "db:migrate:auth-email-codes": "node src/scripts/migrate-auth-email-codes.js",
+    "db:migrate:deposit-destination": "node src/scripts/migrate-deposit-destination.js",
+    "demo:db:create": "node src/scripts/create-demo-database.js",
+    "demo:start": "powershell -NoProfile -ExecutionPolicy Bypass -File src/scripts/start-demo.ps1",
+    "demo:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File src/scripts/stop-demo.ps1"
+  },
+  "author": "Jesus Jimenez",
+  "license": "MIT",
+  "description": "Edición demostrativa de una plataforma transaccional de sorteos, apuestas y billeteras",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "hpp": "^0.2.3",
+    "joi": "^18.2.3",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "mysql2": "^3.22.4",
+    "node-cron": "^4.5.0",
+    "nodemon": "^3.1.14",
+    "pdfkit": "^0.20.2",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.1",
+    "globals": "^17.12.0",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/frontend/"
+    ],
+    "collectCoverageFrom": [
+      "app.js",
+      "config.js",
+      "src/**/*.js",
+      "!src/test/**",
+      "!src/scripts/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "html",
+      "json-summary",
+      "lcov"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 47,
+        "branches": 51,
+        "functions": 57,
+        "lines": 47
+      }
+    }
+  }
+}
