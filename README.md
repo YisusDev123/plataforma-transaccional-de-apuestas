@@ -87,6 +87,26 @@ Los importes se conservan como `DECIMAL` y strings. Los cálculos sensibles no d
 
 El frontend centraliza llamadas HTTP y no realiza actualizaciones optimistas de dinero. Las mutaciones sensibles no se reintentan automáticamente ni se encolan para ejecución offline.
 
+## Retos, decisiones y compensaciones
+
+| Reto | Decisión aplicada | Compensación asumida |
+| --- | --- | --- |
+| Proteger saldos durante apuestas, depósitos, retiros y pagos simultáneos | Ejecutar cada cambio financiero en una transacción y bloquear las filas críticas con `SELECT ... FOR UPDATE` | Los recursos muy disputados pueden reducir throughput, pero nunca se prioriza velocidad sobre consistencia monetaria |
+| Evitar duplicados después de timeouts o reintentos manuales | Asignar un `requestId` por intención y respaldarlo con restricciones únicas y recuperación del resultado existente | Cliente y servidor deben conservar el identificador hasta resolver el estado de la operación |
+| Tratar una desconexión durante `commit` | Marcar el resultado como incierto y conciliarlo mediante la clave idempotente en vez de asumir rollback | La recuperación es más compleja, pero evita repetir una operación que posiblemente sí fue confirmada por MySQL |
+| Prevenir carreras entre cancelaciones, resultados y pagos | Definir unidades de idempotencia, estados condicionales y un orden consistente de bloqueo | Requiere diseñar conjuntamente todos los procesos que escriben el mismo estado |
+| Mantener exactitud monetaria en JavaScript | Conservar importes como `DECIMAL` y strings, y limitar `Intl.NumberFormat` a presentación | Se necesita conversión explícita y utilidades propias, evitando los errores silenciosos de punto flotante |
+| Automatizar el ciclo de vida de los sorteos | Reservar creación, apertura, cierre y pago para jobs idempotentes | Reduce acciones manuales de administración y exige observabilidad y recuperación operativa de los workers |
+| Convertir la aplicación en PWA | Cachear solamente shell y assets; no cachear datos privados ni encolar mutaciones financieras offline | Se pierde operación monetaria sin conexión, pero no se presentan como confirmadas acciones que el servidor desconoce |
+
+### Aprendizajes principales
+
+- Un timeout no significa necesariamente que una transacción falló; el resultado puede ser desconocido para el cliente.
+- Los locks funcionan mejor cuando se define un orden global y se mantienen pequeñas las secciones críticas.
+- Los valores históricos que determinan dinero deben guardarse como snapshots y no depender de reglas actuales.
+- La autorización del backend sigue siendo obligatoria aunque el frontend oculte rutas y controles.
+- En sistemas financieros, una experiencia de usuario más conservadora suele ser preferible a actualizaciones optimistas difíciles de revertir.
+
 ## Stack
 
 Backend:
